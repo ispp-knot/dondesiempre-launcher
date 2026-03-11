@@ -35,8 +35,8 @@ def get_key(key):
         print('Configuration file not found, creating empty configuration file...')
 
         with open(CFG, mode = 'w', encoding = 'utf-8') as f:
-            f.write('BACKEND_PATH = /path/to/backend')
-            f.write('FRONTEND_PATH = /path/to/frontend')
+            f.write('BACKEND_PATH = /path/to/backend\n')
+            f.write('FRONTEND_PATH = /path/to/frontend\n')
         print(f'Configuration file created at {CFG}')
         print('Please set the BACKEND_PATH and FRONTEND_PATH keys as needed.')
         return out

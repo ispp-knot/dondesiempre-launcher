@@ -1,1 +1,2 @@
-BACKEND_PATH = /path/to/backendFRONTEND_PATH = /path/to/frontend
+BACKEND_PATH = /path/to/backend
+FRONTEND_PATH = /path/to/frontend
