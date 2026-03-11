@@ -34,8 +34,9 @@ def get_key(key):
     if not os.path.exists(CFG):
         print('Configuration file not found, creating empty configuration file...')
 
-        with open(CFG, mode = 'w', encoding = 'utf-8') as _:
-            pass
+        with open(CFG, mode = 'w', encoding = 'utf-8') as f:
+            f.write('BACKEND_PATH = /path/to/backend')
+            f.write('FRONTEND_PATH = /path/to/frontend')
         print(f'Configuration file created at {CFG}')
         print('Please set the BACKEND_PATH and FRONTEND_PATH keys as needed.')
         return out
@@ -162,11 +163,11 @@ def common_db(args, env):
     container = containers[container_name]
 
     if match_arg(args, 'RESET') or match_arg(args, 'STOP'):
-        subprocess.run(['docker-compose', 'stop', container_name])
-        subprocess.run(['docker-compose', 'down', '-v', container_name])
+        subprocess.run(['docker', 'compose', 'stop', container_name])
+        subprocess.run(['docker', 'compose', 'down', '-v', container_name])
 
     if not match_arg(args, 'STOP'):
-        subprocess.run(['docker-compose', 'up', '-d', container_name])
+        subprocess.run(['docker', 'compose', 'up', '-d', container_name])
         out = check_db(container)
     cd_proj()
     return out
@@ -236,8 +237,8 @@ def front_run(args):
         return False
     
     if match_arg(args, 'RESET'):
-        subprocess.run(['docker-compose', 'stop', 'frontend'])
-        subprocess.run(['docker-compose', 'down', '-v', 'frontend'])
+        subprocess.run(['docker', 'compose', 'stop', 'frontend'])
+        subprocess.run(['docker', 'compose', 'down', '-v', 'frontend'])
 
     try:
         if match_arg(args, 'DOCKER'):
