@@ -353,8 +353,6 @@ def usage():
     print(2 * len(NAME) * '-')
     print(NAME)
     print(2 * len(NAME) * '-')
-    print('ISPP - Team DondeSiempre, 2026')
-    print(2 *len(NAME) * '-')
     print('')
    
     print('This launcher script facilitates executing the DondeSiempre application.')
