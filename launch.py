@@ -20,6 +20,7 @@ ARGS = {
     'NO_DB': ['-n', '--nodb'],
     'GEN_MIGR': ['-g, --gen'],
     'NO_CACHE': ['-n, --nocache'],
+    'BUILD': ['-b', '--build'],
     'DOCKER': ['-d', '--docker']
 }
 
@@ -243,6 +244,9 @@ def front_run(args):
     try:
         if match_arg(args, 'DOCKER'):
             subprocess.run(['docker', 'compose', 'up'])
+        elif match_arg(args, 'BUILD'):
+            subprocess.run([NPM, 'run', 'build'])
+            subprocess.run([NPM, 'run', 'start'])
         else:
             subprocess.run([NPM, 'run', 'dev'] + ['--no-cache' if match_arg(args, 'NO_CACHE') else ''])
     except KeyboardInterrupt:
@@ -398,6 +402,7 @@ def usage():
     print('\t\t- install: Installs the frontend dependencies.')
     print('\t\t- run: Executes the frontend. Supported arguments:')
     print('\t\t\t-n, --nocache: Disables the cache.')
+    print('\t\t\t-b, --build: Creates a production build.')
     print('\t\t\t-d, --docker: Executes the frotend using Docker.')
     print('')
     print('\t\t- lint: Applies frontend linter (ESLint).')
