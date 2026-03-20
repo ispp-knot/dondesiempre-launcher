@@ -18,8 +18,8 @@ ARGS = {
     'RESET': ['-r', '--reset'],
     'STOP': ['-s', '--stop'],
     'NO_DB': ['-n', '--nodb'],
-    'GEN_MIGR': ['-g, --gen'],
-    'NO_CACHE': ['-n, --nocache'],
+    'GEN_MIGR': ['-g', '--gen'],
+    'NO_CACHE': ['-n', '--nocache'],
     'BUILD': ['-b', '--build'],
     'DOCKER': ['-d', '--docker']
 }
