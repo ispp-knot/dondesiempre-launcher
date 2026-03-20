@@ -21,7 +21,8 @@ ARGS = {
     'GEN_MIGR': ['-g', '--gen'],
     'NO_CACHE': ['-n', '--nocache'],
     'BUILD': ['-b', '--build'],
-    'DOCKER': ['-d', '--docker']
+    'DOCKER': ['-d', '--docker'],
+    'SEED_IMAGES': ['-i', '--images']
 }
 
 Container = namedtuple('Container', ['port', 'user', 'password', 'db'])
@@ -187,7 +188,10 @@ def back_seed(args):
     if not cd_back():
         return False
     
-    subprocess.run([MVNW, 'spring-boot:run', '-Dspring-boot.run.profiles=seed'])
+    subprocess.run(
+        [MVNW, 'spring-boot:run', '-Dspring-boot.run.profiles=seed']
+        + ['' if match_arg(args, 'SEED_IMAGES') else '-Dspring-boot.run.arguments="--seed.uploadImages=false"']
+    )
     cd_proj()
     return True
 
