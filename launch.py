@@ -226,6 +226,14 @@ def back_git(args):
     cd_proj()
     return True
 
+def back_cmd(args):
+    if not cd_back():
+        return False
+    
+    subprocess.run(args)
+    cd_proj()
+    return True
+
 '''
 FRONT COMMANDS
 '''
@@ -271,6 +279,14 @@ def front_git(args):
         return False
     
     subprocess.run(['git'] + args)
+    cd_proj()
+    return True
+
+def front_cmd(args):
+    if not cd_front():
+        return False
+    
+    subprocess.run(args)
     cd_proj()
     return True
 
@@ -331,12 +347,14 @@ def execute_command(env, cmd, args):
             'seed': back_seed,
             'run': back_run,
             'lint': back_lint,
-            'git': back_git
+            'git': back_git,
+            'cmd': back_cmd
         }, 'front': {
             'install': front_install,
             'run': front_run,
             'lint': front_lint,
-            'git': front_git  
+            'git': front_git,
+            'cmd': front_cmd  
         }, 'test': {
             'db': test_db,
             'run': test_run,
@@ -400,6 +418,7 @@ def usage():
     print('')
     print('\t\t- lint: Applies backend linter (Spotless).')
     print('\t\t- git: Executes any requested Git command in the backend repository.')
+    print('\t\t- cmd: Executes an arbitrary shell command.')
     print('')
 
     print('\t- For the "front" environment:')
@@ -411,6 +430,7 @@ def usage():
     print('')
     print('\t\t- lint: Applies frontend linter (ESLint).')
     print('\t\t- git: Executes any requested Git command in the frontend repository.')
+    print('\t\t- cmd: Executes an arbitrary shell command.')
     print('')
 
     print('\t- For the "test" environment:')
