@@ -362,7 +362,7 @@ def execute_command(env, cmd, args):
             'db': migr_db,
             'run': migr_run,
         }, 'all': {
-            'all': lint_all
+            'lint': lint_all
         }
     }
 
