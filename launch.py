@@ -1,7 +1,7 @@
 import sys, os, subprocess, time, psycopg2, yaml
 
 from pathlib import Path
-from collections import namedtuple
+from typing import NamedTuple
 
 NAME = 'DondeSiempre Launcher'
 
@@ -25,12 +25,16 @@ ARGS = {
     'SEED_IMAGES': ['-i', '--images']
 }
 
-Container = namedtuple('Container', ['port', 'user', 'password', 'db'])
+class Container(NamedTuple):
+    port: int
+    user: str
+    password: str
+    db: str
 
 '''
 UTILS
 '''
-def get_key(key):
+def get_key(key: str) -> str | None:
     out = None
 
     if not os.path.exists(CFG):
@@ -58,8 +62,8 @@ def get_key(key):
         print(f'Error: Key {key} not set in {CFG}')
     return out
 
-def parse_docker_compose(path):
-    out = dict()
+def parse_docker_compose(path: Path) -> dict[str, Container]:
+    out = dict[str, Container]()
 
     with open(path / 'docker-compose.yml', mode = 'r') as f:
         data = yaml.safe_load(f)
@@ -74,7 +78,7 @@ def parse_docker_compose(path):
             out[service] = container
     return out
 
-def check_db(container):
+def check_db(container: Container) -> bool:
     out = False
 
     print('Checking database connectivity...')
@@ -98,7 +102,7 @@ def check_db(container):
             out = True
     return out
 
-def match_arg(args, arg_type):
+def match_arg(args: list[str], arg_type: str) -> bool:
     out = False
 
     for arg in args:
@@ -107,7 +111,7 @@ def match_arg(args, arg_type):
             break
     return out
 
-def filter_args(args, filters):
+def filter_args(args: list[str], filters: list[str]) -> list[str]:
     return [arg for arg in args if not any([match_arg([arg], filter) for filter in filters])]
 
 def cd_back():
@@ -121,7 +125,7 @@ def cd_back():
     print(f'Current working directory: {os.getcwd()}')
     return True
 
-def cd_front():
+def cd_front() -> bool:
     path = get_key('FRONTEND_PATH')
 
     if path == None:
@@ -132,7 +136,7 @@ def cd_front():
     print(f'Current working directory: {os.getcwd()}')
     return True
 
-def cd_key(key):
+def cd_key(key: str) -> bool:
     if key == 'FRONTEND_PATH':
         return cd_front()
     elif key == 'BACKEND_PATH':
@@ -140,26 +144,27 @@ def cd_key(key):
     else:
         return cd_proj()
 
-def cd_proj():
+def cd_proj() -> bool:
     print('Changing to project directory...')
     os.chdir(CWD)
     print(f'Current working directory: {os.getcwd()}')
+    return True
 
 '''
 COMMON COMMANDS
 '''
-def common_db(args, env):
+def common_db(args: list[str], env: str) -> bool:
     out = True
 
     if not cd_back():
         return False
     
-    if env == 'dev':
-        container_name = 'postgres'
-    elif env == 'test':
+    if env == 'test':
         container_name = 'postgres-test'
     elif env == 'migr':
         container_name = 'postgres-devmigrations'
+    else:
+        container_name = 'postgres'
 
     containers = parse_docker_compose(Path(os.getcwd()))
     container = containers[container_name]
@@ -177,10 +182,10 @@ def common_db(args, env):
 '''
 BACK COMMANDS
 '''
-def back_db(args):
+def back_db(args: list[str]) -> bool:
     return common_db(args, 'dev')
 
-def back_seed(args):
+def back_seed(args: list[str]) -> bool:
     if not match_arg(args, 'NO_DB'):
         if not back_db(args):
             return False
@@ -195,7 +200,7 @@ def back_seed(args):
     cd_proj()
     return True
 
-def back_run(args):
+def back_run(args: list[str]) -> bool:
     if not match_arg(args, 'NO_DB'):
         if not back_seed(filter_args(args, ['STOP'])):
             return False
@@ -210,7 +215,7 @@ def back_run(args):
     cd_proj()
     return True
 
-def back_lint(args):
+def back_lint(args: list[str]) -> bool:
     if not cd_back():
         return False
     
@@ -218,7 +223,7 @@ def back_lint(args):
     cd_proj()
     return True
 
-def back_git(args):
+def back_git(args: list[str]) -> bool:
     if not cd_back():
         return False
     
@@ -226,7 +231,7 @@ def back_git(args):
     cd_proj()
     return True
 
-def back_cmd(args):
+def back_cmd(args: list[str]) -> bool:
     if not cd_back():
         return False
     
@@ -237,7 +242,7 @@ def back_cmd(args):
 '''
 FRONT COMMANDS
 '''
-def front_install(args):
+def front_install(args: list[str]) -> bool:
     if not cd_front():
         return False
     
@@ -245,7 +250,7 @@ def front_install(args):
     cd_proj()
     return True
 
-def front_run(args):
+def front_run(args: list[str]) -> bool:
     if not cd_front():
         return False
     
@@ -266,7 +271,7 @@ def front_run(args):
     cd_proj()
     return True
 
-def front_lint(args):
+def front_lint(args: list[str]) -> bool:
     if not cd_front():
         return False
     
@@ -274,7 +279,7 @@ def front_lint(args):
     cd_proj()
     return True
 
-def front_git(args):
+def front_git(args: list[str]) -> bool:
     if not cd_front():
         return False
     
@@ -282,7 +287,7 @@ def front_git(args):
     cd_proj()
     return True
 
-def front_cmd(args):
+def front_cmd(args: list[str]) -> bool:
     if not cd_front():
         return False
     
@@ -293,10 +298,10 @@ def front_cmd(args):
 '''
 TEST COMMANDS
 '''
-def test_db(args):
+def test_db(args: list[str]) -> bool:
     return common_db(args, 'test')
 
-def test_run(args):
+def test_run(args: list[str]) -> bool:
     if not match_arg(args, 'NO_DB'):
         if not test_db(filter_args(args, ['STOP'])):
             return False
@@ -311,10 +316,10 @@ def test_run(args):
 '''
 MIGR COMMANDS
 '''
-def migr_db(args):
+def migr_db(args: list[str]) -> bool:
     return common_db(args, 'migr')
 
-def migr_run(args):
+def migr_run(args: list[str]) -> bool:
     if not match_arg(args, 'NO_DB'):
         if not migr_db(filter_args(args, ['STOP'])):
             return False
@@ -333,14 +338,13 @@ def migr_run(args):
 '''
 ALL COMMANDS
 '''
-def lint_all(args):
-    back_lint(args)
-    front_lint(args)
+def lint_all(args: list[str]) -> bool:
+    return back_lint(args) and front_lint(args)
 
 '''
 MAIN
 '''
-def execute_command(env, cmd, args):
+def execute_command(env: str, cmd: str, args: list[str]) -> None:
     commands = {
         'back': {
             'db': back_db,
@@ -373,7 +377,7 @@ def execute_command(env, cmd, args):
     else:
         commands[env][cmd](args)
 
-def usage():
+def usage() -> None:
     print('')
     print(2 * len(NAME) * '-')
     print(2 * len(NAME) * '-')
@@ -484,7 +488,7 @@ def usage():
     print('\t- If a path is not set, the commands that require it will not do anything.')
     print('')
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2 or '--help' in [arg.strip() for arg in sys.argv]:
         usage()
     else:
