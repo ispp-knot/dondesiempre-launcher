@@ -192,11 +192,13 @@ def back_seed(args: list[str]) -> bool:
 
     if not cd_back():
         return False
+
+    command = [MVNW, 'spring-boot:run', '-Dspring-boot.run.profiles=seed']
+
+    if not match_arg(args, 'SEED_IMAGES'):
+        command.append('-Dspring-boot.run.arguments=--seed.uploadImages=false')
     
-    subprocess.run(
-        [MVNW, 'spring-boot:run', '-Dspring-boot.run.profiles=seed']
-        + ['' if match_arg(args, 'SEED_IMAGES') else '-Dspring-boot.run.arguments="--seed.uploadImages=false"']
-    )
+    subprocess.run(command)
     cd_proj()
     return True
 
