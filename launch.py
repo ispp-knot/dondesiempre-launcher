@@ -22,7 +22,10 @@ ARGS = {
     'NO_CACHE': ['-n', '--nocache'],
     'BUILD': ['-b', '--build'],
     'DOCKER': ['-d', '--docker'],
-    'SEED_IMAGES': ['-i', '--images']
+    'SEED_IMAGES': ['-i', '--images'],
+    'INSTALL': ['-i', '--install'],
+    'UI': ['-u', '--ui'],
+    'HEADED': ['-h', '--headed']
 }
 
 class Container(NamedTuple):
@@ -303,7 +306,7 @@ TEST COMMANDS
 def test_db(args: list[str]) -> bool:
     return common_db(args, 'test')
 
-def test_run(args: list[str]) -> bool:
+def test_back(args: list[str]) -> bool:
     if not match_arg(args, 'NO_DB'):
         if not test_db(filter_args(args, ['STOP'])):
             return False
@@ -312,6 +315,24 @@ def test_run(args: list[str]) -> bool:
         return False
 
     subprocess.run([MVNW, 'test'])
+    cd_proj()
+    return True
+
+def test_e2e(args: list[str]) -> bool:
+    if not cd_front():
+        return False
+
+    if match_arg(args, 'INSTALL'):
+        subprocess.run([NPX, 'playwright', 'install'])
+
+    command = [NPX, 'playwright', 'test']
+
+    if match_arg(args, 'HEADED'):
+        command.append('--headed')
+    elif match_arg(args, 'UI'):
+        command.append('--ui')
+
+    subprocess.run(command)
     cd_proj()
     return True
 
@@ -363,7 +384,8 @@ def execute_command(env: str, cmd: str, args: list[str]) -> None:
             'cmd': front_cmd  
         }, 'test': {
             'db': test_db,
-            'run': test_run,
+            'back': test_back,
+            'e2e': test_e2e
         }, 'migr': {
             'db': migr_db,
             'run': migr_run,
@@ -444,9 +466,12 @@ def usage() -> None:
     print('\t\t\t-r, --reset: Resets the database container and volume.')
     print('\t\t\t-s, --stop: Stops the database container and volume.')
     print('')
-    print('\t\t- run: Executes jUnit tests. Supported arguments:')
+    print('\t\t- back: Executes backend jUnit tests. Supported arguments:')
     print('\t\t\t-n, --nodb: Does not start the database container.')
     print('\t\t\t-r, --reset: Resets the database container and volume.')
+    print('')
+    print('\t\t- e2e: Executes end-to-end Playwright tests. Supported arguments:')
+    print('\t\t\t-i, --install: Installs Playwright browsers.')
     print('')
 
     print('\t- For the "migr" environment:')
