@@ -114,6 +114,15 @@ def match_arg(args: list[str], arg_type: str) -> bool:
             break
     return out
 
+def not_arg(args: list[str]) -> str | None:
+    out = None
+
+    for arg in args:
+        if not arg.strip().startswith('-'):
+            out = arg.strip()
+            break
+    return out
+
 def filter_args(args: list[str], filters: list[str]) -> list[str]:
     return [arg for arg in args if not any([match_arg([arg], filter) for filter in filters])]
 
@@ -314,7 +323,13 @@ def test_back(args: list[str]) -> bool:
     if not cd_back():
         return False
 
-    subprocess.run([MVNW, 'test'])
+    test = not_arg(args)
+    command = [MVNW, 'test']
+
+    if test != None:
+        command.append(f'-Dtest={test.replace('::', '#')}')
+
+    subprocess.run(command)
     cd_proj()
     return True
 
@@ -466,9 +481,13 @@ def usage() -> None:
     print('\t\t\t-r, --reset: Resets the database container and volume.')
     print('\t\t\t-s, --stop: Stops the database container and volume.')
     print('')
-    print('\t\t- back: Executes backend jUnit tests. Supported arguments:')
-    print('\t\t\t-n, --nodb: Does not start the database container.')
-    print('\t\t\t-r, --reset: Resets the database container and volume.')
+    print('\t\t- back <test>: Executes backend jUnit tests.')
+    print('\t\t\t- <test> can be either:')
+    print('\t\t\t\t- The name of a class containing test cases.')
+    print('\t\t\t\t- A class method, with the format ClassName::testMethod.')
+    print('\t\t\t- Supported arguments:')
+    print('\t\t\t\t-n, --nodb: Does not start the database container.')
+    print('\t\t\t\t-r, --reset: Resets the database container and volume.')
     print('')
     print('\t\t- e2e: Executes end-to-end Playwright tests. Supported arguments:')
     print('\t\t\t-i, --install: Installs Playwright browsers.')
