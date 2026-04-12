@@ -376,8 +376,12 @@ def migr_run(args: list[str]) -> bool:
 '''
 ALL COMMANDS
 '''
-def lint_all(args: list[str]) -> bool:
+def all_lint(args: list[str]) -> bool:
     return back_lint(args) and front_lint(args)
+
+def all_cmd(args: list[str]) -> bool:
+    subprocess.run(args)
+    return True
 
 '''
 MAIN
@@ -405,7 +409,8 @@ def execute_command(env: str, cmd: str, args: list[str]) -> None:
             'db': migr_db,
             'run': migr_run,
         }, 'all': {
-            'lint': lint_all
+            'lint': all_lint,
+            'cmd': all_cmd
         }
     }
 
@@ -506,6 +511,7 @@ def usage() -> None:
 
     print('\t- For the "all" environment:')
     print('\t\t- lint: Applies both the frontend and backend linters.')
+    print('\t\t- cmd: Executes an arbitrary shell command.')
     print('')
     
     print('Invoking the launcher using the "--help" argument will display this message and return.')
